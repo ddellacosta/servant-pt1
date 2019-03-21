@@ -3,11 +3,11 @@
 
 module Main where
 
-import Control.Monad.Reader
 import Data.Text (unpack)
 import Database
 import Dhall
 import GHC.Conc
+import GHC.Natural
 import Network.Wai.Handler.Warp
 import Prelude hiding (init)
 import Server
@@ -16,11 +16,6 @@ import Types
 importConfig :: IO Config
 importConfig = input auto "./config.dhall"
  
-doApp :: App ()
-doApp = do
-  env <- ask
-  liftIO $ run 8081 (app env)
-
 init :: IO Env
 init = do
   cfg        <- importConfig
@@ -31,5 +26,6 @@ init = do
 
 main :: IO ()
 main = do
- env <- init 
- runReaderT doApp env
+  env <- init
+  let wwwPort = (naturalToInt $ port $ wwwConfig $ config env)
+  run wwwPort (app env)

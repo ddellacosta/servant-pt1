@@ -14,7 +14,7 @@ import Database.PostgreSQL.Simple.Types
 import Types
 
 connectApp :: DatabaseConfig -> IO Connection
-connectApp (DB host db user password dir) = connectPostgreSQL $ BS8.pack $ unpack url
+connectApp (DBConfig host db user password dir) = connectPostgreSQL $ BS8.pack $ unpack url
   where url = "host=" <> host <> " dbname=" <> db <> " user=" <> user <> " password=" <> password
 
 migrate :: FilePath -> Connection -> IO (MigrationResult String)

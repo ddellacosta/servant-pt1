@@ -11,4 +11,6 @@
     , dir =
         "migrations"
     }
+, wwwConfig =
+    { port = 8081 }
 }

@@ -49,7 +49,9 @@ library
 
 executable servant-pt1
   main-is:             Main.hs
-  -- other-modules:
+  other-modules:       Database
+                     , Server
+                     , Types
   -- other-extensions:
   -- build-depends:       base >= 4.11.1.0
   -- build-depends:       base >=4.11 && <=4.12
