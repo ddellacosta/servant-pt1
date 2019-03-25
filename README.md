@@ -7,7 +7,7 @@
 
 TODO
 - dummy data
-- logging
+- (tidy up) logging
 - exception handling
 - tests
 - maybe pin to something other than 19.03-beta
