@@ -1,11 +1,15 @@
-{-# LANGUAGE DeriveGeneric, DerivingVia #-}
+{-# LANGUAGE DeriveGeneric, DerivingVia, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Types where
 
+import Control.Lens
+import Control.Lens.TH
 import Control.Monad.Reader
 import Database.PostgreSQL.Simple (Connection)
 import Dhall
 import GHC.Conc
+import Katip as K
 import Servant
 import TextShow
 import TextShow.Generic
@@ -43,13 +47,29 @@ instance Interpret Config
 -- App and App State
 
 data Env = Env {
-    config :: Config
-  , dbHandle :: !(TVar Connection)
-  } -- deriving (Show, Generic)
-    -- deriving TextShow via FromGeneric Env
+    _config :: Config
+  , _dbHandle :: !(TVar Connection)
+  -- Katip config
+  , _logNamespace :: K.Namespace
+  , _logContext :: K.LogContexts
+  , _logEnv :: K.LogEnv
+  }
 
-type App = ReaderT Env Handler
+makeClassy ''Env
 
+newtype App m a = App {
+  unApp :: ReaderT Env m a
+} deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env) -- all necessary for Katip
+
+instance (MonadIO m) => K.Katip (App m) where
+  getLogEnv = view logEnv
+  localLogEnv f (App m) = App (local (over logEnv f) m)
+
+instance (MonadIO m) => KatipContext (App m) where
+  getKatipContext = view logContext
+  localKatipContext f (App m) = App (local (over logContext f) m)
+  getKatipNamespace = view logNamespace
+  localKatipNamespace f (App m) = App (local (over logNamespace f) m)
 
 
 -- Business Model
