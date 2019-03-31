@@ -23,7 +23,7 @@ server :: (MonadIO a) => ServerT API (App a)
 server = do
   tv     <- view dbHandle
   dbConn <- liftIO $ readTVarIO tv
-  cs     <- liftIO $ clients dbConn
+  cs     <- clients dbConn
   _      <- $(logTM) InfoS "Hello world"
   return cs
 
