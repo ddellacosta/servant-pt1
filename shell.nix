@@ -3,7 +3,8 @@
 let
   inherit (nixpkgs) pkgs;
   hpkgs = pkgs.haskell.packages.${compiler};
+  servant-pt1 = pkgs.callPackage ./. {};
 in
-(hpkgs.callCabal2nix "servant-pt1" ./. {}).env.overrideAttrs(drv: {
+servant-pt1.env.overrideAttrs (drv: {
   buildInputs = drv.buildInputs ++ [ hpkgs.cabal-install pkgs.dhall pkgs.postgresql ];
 })
