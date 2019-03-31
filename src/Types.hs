@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric, DerivingVia, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Types where
@@ -8,7 +7,7 @@ import Control.Lens.TH
 import Control.Monad.Reader
 import Database.PostgreSQL.Simple (Connection)
 import Dhall
-import GHC.Conc
+import Control.Concurrent.STM (TVar)
 import Katip as K
 import Servant
 import TextShow
@@ -59,7 +58,7 @@ makeClassy ''Env
 
 newtype App m a = App {
   unApp :: ReaderT Env m a
-} deriving (Functor, Applicative, Monad, MonadIO, MonadReader Env) -- all necessary for Katip
+} deriving newtype (Functor, Applicative, Monad, MonadIO, MonadReader Env) -- all necessary for Katip
 
 instance (MonadIO m) => K.Katip (App m) where
   getLogEnv = view logEnv

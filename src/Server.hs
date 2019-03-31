@@ -1,7 +1,4 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module Server where
 
@@ -9,7 +6,7 @@ import Control.Lens
 import Control.Monad.Reader
 import Data.Aeson.Types
 import Database
-import GHC.Conc
+import Control.Concurrent.STM (readTVarIO)
 import Katip
 import Servant
 import Types
@@ -21,9 +18,7 @@ type API = "clients" :> Get '[JSON] [ClientInfo]
 
 server :: (MonadIO a) => ServerT API (App a)
 server = do
-  tv     <- view dbHandle
-  dbConn <- liftIO $ readTVarIO tv
-  cs     <- clients dbConn
+  cs     <- runDb clients
   _      <- $(logTM) InfoS "Hello world"
   return cs
 

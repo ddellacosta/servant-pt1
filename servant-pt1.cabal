@@ -38,6 +38,7 @@ library
                      , say
                      , servant >= 0.15
                      , servant-server
+                     , stm
                      , string-conversions >= 0.4.0.1
                      , text >= 1.2.3.1
                      , text-show
@@ -45,13 +46,24 @@ library
                      , wai
                      , warp
   hs-source-dirs:      src
+  exposed-modules:     Database
+                       Server
+                       Types
   default-language:    Haskell2010
+  other-extensions:    QuasiQuotes
+                       TemplateHaskell
+  default-extensions:  DataKinds
+                       DeriveAnyClass
+                       DeriveGeneric
+                       DerivingVia
+                       GeneralizedNewtypeDeriving
+                       FlexibleContexts
+                       OverloadedStrings
+                       TypeOperators
 
 executable servant-pt1
   main-is:             Main.hs
-  other-modules:       Database
-                     , Server
-                     , Types
+  hs-source-dirs:      app
   -- other-extensions:
   -- build-depends:       base >= 4.11.1.0
   -- build-depends:       base >=4.11 && <=4.12
@@ -76,11 +88,11 @@ executable servant-pt1
                      , say
                      , servant >= 0.15
                      , servant-server
+                     , servant-pt1
                      , string-conversions >= 0.4.0.1
                      , text >= 1.2.3.1
                      , text-show
                      , time >= 1.8.0.2
                      , wai
                      , warp
-  hs-source-dirs:      src
   default-language:    Haskell2010

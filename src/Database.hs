@@ -1,10 +1,11 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 module Database where
 
+import Control.Concurrent.STM (readTVarIO)
+import Control.Lens (view)
 import Control.Monad.IO.Class (MonadIO(liftIO))
+import Control.Monad.Reader (MonadReader(ask), ReaderT, runReaderT)
 import qualified Data.ByteString.Char8 as BS8
 import Data.Text
 import Database.PostgreSQL.Simple
@@ -34,10 +35,18 @@ validate dir conn = do
 instance FromRow ClientInfo where
   fromRow = ClientInfo <$> field <*> field <*> field <*> field <*> (fromPGArray <$> field)
 
-clients :: MonadIO m => Connection -> m [ClientInfo]
-clients conn = do
+-- clients :: MonadIO m => ReaderT Connection m [ClientInfo]
+clients :: (MonadIO m, MonadReader Connection m) => m [ClientInfo]
+clients = do
+  conn <- ask
   clients <- liftIO $ query_ conn clientsQueryString
   pure clients
+
+runDb :: (MonadIO m, MonadReader Env m) => ReaderT Connection m a -> m a
+runDb dbAction = do
+  tv <- view dbHandle
+  dbConn <- liftIO $ readTVarIO tv
+  runReaderT dbAction dbConn
 
 clientsQueryString :: Query
 clientsQueryString = [sql| select ci.client_info_id

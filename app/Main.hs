@@ -17,7 +17,7 @@ import Types
 
 importConfig :: IO Config
 importConfig = input auto "./config.dhall"
- 
+
 init :: IO Env
 init = do
   fileScribe   <- mkFileScribe "./servant-pt1.log" InfoS V3
