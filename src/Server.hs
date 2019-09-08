@@ -2,23 +2,19 @@
 
 module Server where
 
-import Control.Concurrent.STM (readTVarIO)
-import Control.Lens
 import Control.Monad.Reader
-import Data.Aeson.Types
 import Database
 import Katip
 import Servant
 import Types
+import Network.Wai.Middleware.Cors
 
-instance ToJSON ClientInfo
-
-type API = "clients" :> Get '[JSON] [ClientInfo]
---         :<|> "client" :> Get '[JSON] ClientInfo
+type API = "musicians" :> Get '[JSON] [MusicianInfo]
+--         :<|> "musician" :> Get '[JSON] MusicianInfo
 
 server :: (MonadIO a) => ServerT API (App a)
 server = do
-  cs <- runDb clients
+  cs <- runDb musicians
   _  <- $(logTM) InfoS "Hello world"
   return cs
 
@@ -29,4 +25,4 @@ nt :: Env -> App Handler a -> Handler a
 nt env app = runReaderT (unApp app) env
 
 app :: Env -> Application
-app env = serve api $ hoistServer api (nt env) server
+app env = simpleCors $ serve api $ hoistServer api (nt env) server

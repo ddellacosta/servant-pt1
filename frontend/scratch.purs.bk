@@ -1,0 +1,59 @@
+
+-- | Shows how to use Halogen VDOM DSL to render HTML without properties or CSS
+staticHtml :: StaticHTML
+staticHtml =
+  HH.div_
+    -- The 'div' tag takes an Array of children
+    [ HH.div_
+      [ HH.span_
+        -- as does the `span` tag
+        [ HH.text "This is text in a span!" ]
+      ]
+    , HH.button_
+      [ HH.text "You can click me, but I don't do anything." ]
+    ]
+
+-- | Runs an effect three times, provided that the given condition is
+-- | true.
+thriceIf :: Boolean -> Effect Unit -> Effect Unit
+thriceIf cond effect =
+  if cond
+    then do
+      effect
+      effect
+      effect
+    else do
+      effect
+
+duff :: Effect Unit
+duff = do
+  b <- randomBool
+  thriceIf b $ log ("the bool is " <> (show b))
+
+multipleOf :: Int -> Int -> Boolean
+multipleOf m n = if (m `mod` n == 0)
+                 then true
+                 else false
+
+multiplesFrom' :: Int -> Int -> Array Int -> Array Int
+multiplesFrom' _ 0 is = is
+multiplesFrom' _ 1 is = is
+multiplesFrom' 0 _ is = is
+multiplesFrom' 1 _ is = is
+multiplesFrom' m n is = multiplesFrom' (m - 1) n (if (multipleOf m n) then (m : is) else is)
+
+data Fub f = Fub {
+    blah :: String
+  , barf :: Int
+  , blag :: String
+    | f
+  }
+
+-- f1 :: Fub
+-- f1 = { barf: "a", blag: 2, blah: "c" }
+
+-- f2 :: Fub
+-- f2 = { barf: "a", blah: "c" }
+
+-- instance showFub :: Show Fub where
+--   show (Fub blah barf blag) = show blah <> show barf <> show blag

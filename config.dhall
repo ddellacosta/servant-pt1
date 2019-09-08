@@ -3,7 +3,7 @@
     { host =
         "localhost"
     , db =
-        "fake-crm"
+        "musicians"
     , user =
         "dd"
     , password =

@@ -44,6 +44,7 @@ common deps
                      , text-show
                      , time >= 1.8.0.2
                      , wai
+                     , wai-cors
                      , warp
   ghc-options:        -Wall
   default-extensions:  DataKinds

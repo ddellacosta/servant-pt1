@@ -1,4 +1,10 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell
+           , DuplicateRecordFields
+           , FunctionalDependencies
+           , MultiParamTypeClasses
+           , TypeSynonymInstances
+           , FlexibleInstances
+#-}
 
 module Types where
 
@@ -6,13 +12,19 @@ import Control.Concurrent.STM (TVar)
 import Control.Lens
 import Control.Lens.TH ()
 import Control.Monad.Reader
+import Data.Aeson.Types
+import Data.Text
+import Data.Time
+import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple (Connection)
-import Dhall
+import Database.PostgreSQL.Simple.Types
+import Dhall (Generic, Interpret, Natural)
 import Katip as K
 import Servant ()
 import TextShow
 import TextShow.Generic
 
+-- import Numeric.Natural
 
 -- Configuration
 
@@ -73,17 +85,15 @@ instance (MonadIO m) => KatipContext (App m) where
 
 -- Business Model
 
-data ClientInfo = ClientInfo
-  { clientInfoId :: Int
-  , clientName :: Text
-  , clientEmail :: Text
-  , clientAge :: Int
-  , clientInterestedIn :: [Text]
+data MusicianInfo = MusicianInfo {
+    musicianInfoId :: Int
+  , musicianName :: Text
+  , musicianDOB :: Day
+  , musicianDOD :: Day
+  , musicianCharacteristics :: [Text]
   } deriving (Generic)
 
-data Email = Email
-  { from :: Text
-  , to :: Text
-  , subject :: Text
-  , body :: Text
-  } deriving (Generic)
+instance FromRow MusicianInfo where
+  fromRow = MusicianInfo <$> field <*> field <*> field <*> field <*> (fromPGArray <$> field)
+
+instance ToJSON MusicianInfo

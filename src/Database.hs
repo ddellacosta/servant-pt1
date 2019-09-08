@@ -9,14 +9,12 @@ import Control.Monad.Reader (MonadReader(ask), ReaderT, runReaderT)
 import qualified Data.ByteString.Char8 as BS8
 import Data.Text
 import Database.PostgreSQL.Simple
-import Database.PostgreSQL.Simple.FromRow
 import Database.PostgreSQL.Simple.Migration
 import Database.PostgreSQL.Simple.SqlQQ
-import Database.PostgreSQL.Simple.Types
 import Types
 
 connectApp :: MonadIO m => DatabaseConfig -> m Connection
-connectApp (DBConfig host db user password dir) =
+connectApp (DBConfig host db user password _) =
   liftIO $ connectPostgreSQL $ BS8.pack $ unpack url
   where url = "host=" <> host <> " dbname=" <> db <> " user=" <> user <> " password=" <> password
 
@@ -32,14 +30,11 @@ validate dir conn = do
   liftIO $ withTransaction conn $ runMigration $ MigrationContext
    (MigrationValidation (MigrationDirectory dir)) True conn
 
-instance FromRow ClientInfo where
-  fromRow = ClientInfo <$> field <*> field <*> field <*> field <*> (fromPGArray <$> field)
-
-clients :: (MonadIO m, MonadReader Connection m) => m [ClientInfo]
-clients = do
+musicians :: (MonadIO m, MonadReader Connection m) => m [MusicianInfo]
+musicians = do
   conn <- ask
-  clients <- liftIO $ query_ conn clientsQueryString
-  pure clients
+  musicians <- liftIO $ query_ conn musiciansQueryString
+  pure musicians
 
 runDb :: (MonadIO m, MonadReader Env m) => ReaderT Connection m a -> m a
 runDb dbAction = do
@@ -47,18 +42,18 @@ runDb dbAction = do
   dbConn <- liftIO $ readTVarIO tv
   runReaderT dbAction dbConn
 
-clientsQueryString :: Query
-clientsQueryString = [sql| select ci.client_info_id
-                                , ci.client_name
-                                , ci.client_email
-                                , ci.client_age
-                                , array_agg(cis.client_interest) as client_interested_in
-                             from client_info ci
-                                , client_info_interests cii
-                                , client_interests cis
-                            where ci.client_info_id = cii.client_info_id
-                              and cii.client_interests_id = cis.client_interests_id
-                         group by ci.client_info_id
-                                , ci.client_name
-                                , ci.client_email
-                                , ci.client_age                                         |]
+musiciansQueryString :: Query
+musiciansQueryString = [sql| select mi.musician_info_id
+                                  , mi.musician_name
+                                  , mi.musician_dob
+                                  , mi.musician_dod
+                                  , array_agg(mc.musician_characteristic)
+                           from musician_info mi
+                           left join (musician_info_characteristic mic
+                                      join musician_characteristic mc
+                                      using (musician_characteristic_id))
+                           using (musician_info_id)
+                           group by mi.musician_info_id
+                                  , mi.musician_name
+                                  , mi.musician_dob
+                                  , mi.musician_dod |]

@@ -2,3 +2,6 @@
 dist
 dist-newstyle
 *.*~
+logs/*
+frontend-bk
+result
